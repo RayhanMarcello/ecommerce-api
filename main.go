@@ -1,8 +1,24 @@
 package main
 
-import "golang-emarket/db"
+import (
+	"golang-emarket/controller"
+	"golang-emarket/db"
+	"golang-emarket/repository"
+	"golang-emarket/router"
+	"golang-emarket/service"
+)
 
 func main() {
-	db.Database()
+	db := db.Database()
+
+	repo := repository.NewOrderRepository(db)
+
+	service := service.NewOrderService(db, repo)
+
+	controller := controller.NewOrderController(service)
+
+	r := router.Route(controller)
+
+	r.Run(":8080")
 
 }
