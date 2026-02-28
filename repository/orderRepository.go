@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"golang-emarket/models"
 
 	"gorm.io/gorm"
@@ -8,8 +9,8 @@ import (
 
 type OrderRepository interface {
 	WithTx(tx *gorm.DB) OrderRepository
-	Create(order *models.Orders) error
-	FindByID(id uint) (*models.Orders, error)
+	Create(order *models.Orders, ctx context.Context) error
+	FindByID(id uint, ctx context.Context) (*models.Orders, error)
 }
 
 type orderRepository struct {
@@ -24,13 +25,13 @@ func (r *orderRepository) WithTx(tx *gorm.DB) OrderRepository {
 	return &orderRepository{db: tx}
 }
 
-func (r *orderRepository) Create(order *models.Orders) error {
-	return r.db.Create(order).Error
+func (r *orderRepository) Create(order *models.Orders, ctx context.Context) error {
+	return r.db.WithContext(ctx).Create(order).Error
 }
 
-func (r *orderRepository) FindByID(id uint) (*models.Orders, error) {
+func (r *orderRepository) FindByID(id uint, ctx context.Context) (*models.Orders, error) {
 	var o models.Orders
-	err := r.db.Preload("Customers").Preload("OrderItems.Products").Preload("payments").First(&o, id).Error
+	err := r.db.WithContext(ctx).Preload("Customer").Preload("OrderItems.Products").First(&o, id).Error
 	if err != nil {
 		return nil, err
 	}
