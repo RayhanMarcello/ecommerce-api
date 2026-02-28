@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"golang-emarket/dto"
 	"golang-emarket/models"
 	"golang-emarket/repository"
@@ -9,8 +10,8 @@ import (
 )
 
 type OrderService interface {
-	CreateOrder(req dto.CreateOrderRequest) (*models.Orders, error)
-	GetOrder(id uint) (*models.Orders, error)
+	CreateOrder(req dto.CreateOrderRequest, ctx context.Context) (*models.Orders, error)
+	GetOrder(id uint, ctx context.Context) (*models.Orders, error)
 }
 
 type orderService struct {
@@ -22,7 +23,7 @@ func NewOrderService(db *gorm.DB, repo repository.OrderRepository) OrderService 
 	return &orderService{db: db, repo: repo}
 }
 
-func (s *orderService) CreateOrder(req dto.CreateOrderRequest) (*models.Orders, error) {
+func (s *orderService) CreateOrder(req dto.CreateOrderRequest, ctx context.Context) (*models.Orders, error) {
 	var CreatedID uint
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		txRepos := s.repo.WithTx(tx)
@@ -41,7 +42,7 @@ func (s *orderService) CreateOrder(req dto.CreateOrderRequest) (*models.Orders, 
 				UnitPrice: 0,
 			})
 		}
-		if err := txRepos.Create(&orders); err != nil {
+		if err := txRepos.Create(&orders, ctx); err != nil {
 			return err
 		}
 
@@ -51,9 +52,9 @@ func (s *orderService) CreateOrder(req dto.CreateOrderRequest) (*models.Orders, 
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.FindByID(CreatedID)
+	return s.repo.FindByID(CreatedID, ctx)
 }
 
-func (s *orderService) GetOrder(id uint) (*models.Orders, error) {
-	return s.repo.FindByID(id)
+func (s *orderService) GetOrder(id uint, ctx context.Context) (*models.Orders, error) {
+	return s.repo.FindByID(id, ctx)
 }
