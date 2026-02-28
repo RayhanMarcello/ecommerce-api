@@ -15,7 +15,7 @@ type Orders struct {
 
 	Total_ammount uint   `gorm:"not null"`
 	Status        string `gorm:"size:10;not null;default:'pending'"`
-	Created_at    time.Time
+	CreatedAt     time.Time
 	Customer      Customers `gorm:"foreignKey:CustomerID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 
 	OrderItems []OrderItems `gorm:"foreignKey:OrderID;references:ID"`
